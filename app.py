@@ -8,7 +8,7 @@ CORS(app)
 # Use a global variable for todos in serverless environment
 TODOS = []
 
-@app.route('/', methods=['GET'])
+@app.route('/')
 def hello():
     return jsonify({"message": "Todo API is running!"})
 
