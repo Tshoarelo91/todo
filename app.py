@@ -9,6 +9,9 @@ CORS(app)
 # In-memory storage
 todos = []
 
+# Valid categories
+VALID_CATEGORIES = ['personal', 'consulting', 'work']
+
 def validate_todo(todo):
     if not todo.get('title'):
         return False, 'Title is required'
@@ -16,6 +19,10 @@ def validate_todo(todo):
     status = todo.get('status', 'pending')
     if status not in ['pending', 'in_progress', 'completed']:
         return False, 'Invalid status'
+    
+    category = todo.get('category')
+    if category and category not in VALID_CATEGORIES:
+        return False, f'Invalid category. Must be one of: {", ".join(VALID_CATEGORIES)}'
     
     due_date = todo.get('due_date')
     if due_date:
@@ -34,6 +41,10 @@ def hello():
 def get_todos():
     return jsonify(todos)
 
+@app.route('/api/categories', methods=['GET'])
+def get_categories():
+    return jsonify(VALID_CATEGORIES)
+
 @app.route('/api/todos', methods=['POST'])
 def add_todo():
     todo = request.json
@@ -46,6 +57,7 @@ def add_todo():
     # Set default values
     todo['id'] = len(todos) + 1
     todo['status'] = todo.get('status', 'pending')
+    todo['category'] = todo.get('category', 'personal')  # Default to personal
     todo['created_at'] = datetime.utcnow().isoformat() + 'Z'
     
     todos.append(todo)
