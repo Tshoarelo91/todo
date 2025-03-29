@@ -8,6 +8,9 @@ CORS(app)
 # Use a global variable for todos in serverless environment
 TODOS = []
 
+# Valid status values
+VALID_STATUSES = ['pending', 'in_progress', 'completed']
+
 @app.route('/')
 def hello():
     return jsonify({"message": "Todo API is running!"})
@@ -26,8 +29,12 @@ def add_todo():
         new_todo = {
             'id': len(TODOS) + 1,
             'title': data['title'],
-            'completed': data.get('completed', False)
+            'status': data.get('status', 'pending')  # Default to pending
         }
+        
+        if new_todo['status'] not in VALID_STATUSES:
+            return jsonify({"error": "Invalid status. Must be one of: pending, in_progress, completed"}), 400
+            
         TODOS.append(new_todo)
         return jsonify(new_todo), 201
     except Exception as e:
@@ -43,8 +50,10 @@ def update_todo(todo_id):
         data = request.get_json()
         if 'title' in data:
             todo['title'] = data['title']
-        if 'completed' in data:
-            todo['completed'] = data['completed']
+        if 'status' in data:
+            if data['status'] not in VALID_STATUSES:
+                return jsonify({"error": "Invalid status. Must be one of: pending, in_progress, completed"}), 400
+            todo['status'] = data['status']
         return jsonify(todo)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
